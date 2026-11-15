@@ -1,0 +1,4 @@
+dist/
+.openai/
+*-records-*.json
+*.zip
