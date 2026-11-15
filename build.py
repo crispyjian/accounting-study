@@ -8,6 +8,7 @@ root=Path(__file__).parent
 runpy.run_path(str(root/'build_content.py'))
 runpy.run_path(str(root/'book_content.py'))
 runpy.run_path(str(root/'foundation_content.py'))
+runpy.run_path(str(root/'complete_content.py'))
 template=(root/'index.template.html').read_text()
 data=json.loads((root/'content.json').read_text())
 payload=json.dumps(data,ensure_ascii=False,separators=(',',':')).replace('</','<\\/')
