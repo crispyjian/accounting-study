@@ -10,10 +10,10 @@ const sandbox={console,Date,Math,Set,Map,JSON,Number,String,Boolean,Array,Object
  location:{hash:'#home'},window:{addEventListener(){},scrollTo(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},setTimeout(){return 1},clearTimeout(){},setInterval(){},navigator:{}};
 vm.createContext(sandbox);vm.runInContext(source,sandbox);
 const evaluate=s=>vm.runInContext(s,sandbox);
-assert.equal(evaluate('QUESTIONS.length'),464);assert.equal(evaluate('LESSONS.length'),33);
-assert.equal(evaluate('new Set(QUESTIONS.map(q=>q.id)).size'),464);
-assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="재무회계").length'),264);
-assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="원가회계").length'),200);
+assert.equal(evaluate('QUESTIONS.length'),496);assert.equal(evaluate('LESSONS.length'),33);
+assert.equal(evaluate('new Set(QUESTIONS.map(q=>q.id)).size'),496);
+assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="재무회계").length'),292);
+assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="원가회계").length'),204);
 assert(evaluate('QUESTIONS.every(q=>q.choices.length===4&&new Set(q.choices).size===4&&q.explanation.length>12&&LESSONS.some(l=>l.id===q.lesson))'));
 // Answer-index randomization never changes the underlying correct answer.
 evaluate('startSession("practice", QUESTIONS.slice(0,10).map(q=>q.id))');
@@ -39,7 +39,7 @@ evaluate('state.session.deadline=Date.now()-100;tick();tick()');
 assert.equal(evaluate('state.session.finished'),true);assert.equal(evaluate('state.history.length'),1);
 assert.equal(evaluate('Object.keys(state.attempts).length'),40);
 assert.equal(evaluate('state.history[0].score'),60);
-console.log('PASS — 464 unique questions; valid subject pools; scoring, subject threshold, retry history, backup validation, escaping and timed auto-submit.');
+console.log('PASS — 496 unique questions; valid subject pools; scoring, subject threshold, retry history, backup validation, escaping and timed auto-submit.');
 
 // Every chapter now provides a full reading, defined vocabulary and a worked example.
 assert(evaluate('LESSONS.every(l=>l.book.sections.length>=4&&l.book.sections.every(s=>s.paragraphs.length>=2)&&l.book.terms.length===4&&l.book.worked.steps.length===3)'));
@@ -48,7 +48,7 @@ assert.equal(evaluate('QUESTIONS.filter(q=>q.level==="반복").length'),80);
 assert(evaluate('LESSONS.every(l=>QUESTIONS.filter(q=>q.lesson===l.id).length===l.questionCount)'));
 // Original v1 question ids and notes remain valid after the expansion.
 assert.equal(evaluate('normalize({version:1,completed:[1],notes:{1:"계속 공부"},bookmarks:["01-01"]}).notes[1]'),'계속 공부');
-console.log('PASS — 33 textbook chapters, 132 definitions, 44 worked examples and v1 record compatibility.');
+console.log('PASS — 33 textbook chapters, 132 definitions, 54 worked examples and v1 record compatibility.');
 
 // Foundation routes, migration and backup must preserve existing records.
 assert.equal(evaluate('FOUNDATION.length'),8);
@@ -82,3 +82,9 @@ evaluate('location.hash="#syllabus";render()');assert(evaluate('app.innerHTML.in
 evaluate('state.completed=LESSONS.map(l=>l.id);home()');assert(evaluate('app.innerHTML.includes("width:100%")&&app.innerHTML.includes("/ 33 단원")'));
 assert(evaluate('QUESTIONS.filter(q=>q.level!=="입문"&&q.subject==="재무회계").length>=20&&QUESTIONS.filter(q=>q.level!=="입문"&&q.subject==="원가회계").length>=20'));
 console.log('PASS — 18 official syllabus mappings; all new readings; stable IDs, reordered navigation, extra cost examples and dynamic totals.');
+
+assert.equal(evaluate('CONTENT.coverage.reduce((n,c)=>n+c.items.length,0)'),61);
+assert.equal(evaluate('LESSONS.reduce((n,l)=>n+1+(l.book.extraWorked||[]).length,0)'),54);
+evaluate('lessonView(29)');assert(evaluate('app.innerHTML.includes("2년 말 원금 상환 직전")'));
+evaluate('lessonView(23)');assert(evaluate('app.innerHTML.includes("이동평균")&&app.innerHTML.includes("1,400")'));
+console.log('PASS — 61 detailed syllabus items; 54 worked examples; new inventory and full bond examples rendered.');
