@@ -10,10 +10,10 @@ const sandbox={console,Date,Math,Set,Map,JSON,Number,String,Boolean,Array,Object
  location:{hash:'#home'},window:{addEventListener(){},scrollTo(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},setTimeout(){return 1},clearTimeout(){},setInterval(){},navigator:{}};
 vm.createContext(sandbox);vm.runInContext(source,sandbox);
 const evaluate=s=>vm.runInContext(s,sandbox);
-assert.equal(evaluate('QUESTIONS.length'),160);assert.equal(evaluate('LESSONS.length'),20);
-assert.equal(evaluate('new Set(QUESTIONS.map(q=>q.id)).size'),160);
-assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="재무회계").length'),80);
-assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="원가회계").length'),80);
+assert.equal(evaluate('QUESTIONS.length'),320);assert.equal(evaluate('LESSONS.length'),20);
+assert.equal(evaluate('new Set(QUESTIONS.map(q=>q.id)).size'),320);
+assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="재무회계").length'),160);
+assert.equal(evaluate('QUESTIONS.filter(q=>q.subject==="원가회계").length'),160);
 assert(evaluate('QUESTIONS.every(q=>q.choices.length===4&&new Set(q.choices).size===4&&q.explanation.length>12&&LESSONS.some(l=>l.id===q.lesson))'));
 // Answer-index randomization never changes the underlying correct answer.
 evaluate('startSession("practice", QUESTIONS.slice(0,10).map(q=>q.id))');
@@ -39,4 +39,13 @@ evaluate('state.session.deadline=Date.now()-100;tick();tick()');
 assert.equal(evaluate('state.session.finished'),true);assert.equal(evaluate('state.history.length'),1);
 assert.equal(evaluate('Object.keys(state.attempts).length'),40);
 assert.equal(evaluate('state.history[0].score'),60);
-console.log('PASS — 160 unique questions; balanced subjects; scoring, subject threshold, retry history, backup validation, escaping and timed auto-submit.');
+console.log('PASS — 320 unique questions; balanced subjects; scoring, subject threshold, retry history, backup validation, escaping and timed auto-submit.');
+
+// Every chapter now provides a full reading, defined vocabulary and a worked example.
+assert(evaluate('LESSONS.every(l=>l.book.sections.length>=4&&l.book.sections.every(s=>s.paragraphs.length>=2)&&l.book.terms.length===4&&l.book.worked.steps.length===3)'));
+assert.equal(evaluate('QUESTIONS.filter(q=>q.level==="입문").length'),80);
+assert.equal(evaluate('QUESTIONS.filter(q=>q.level==="반복").length'),80);
+assert(evaluate('LESSONS.every(l=>QUESTIONS.filter(q=>q.lesson===l.id).length===16)'));
+// Original v1 question ids and notes remain valid after the expansion.
+assert.equal(evaluate('normalize({version:1,completed:[1],notes:{1:"계속 공부"},bookmarks:["01-01"]}).notes[1]'),'계속 공부');
+console.log('PASS — 20 textbook chapters, 80 definitions, 20 worked examples and v1 record compatibility.');
