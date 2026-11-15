@@ -49,3 +49,22 @@ assert(evaluate('LESSONS.every(l=>QUESTIONS.filter(q=>q.lesson===l.id).length===
 // Original v1 question ids and notes remain valid after the expansion.
 assert.equal(evaluate('normalize({version:1,completed:[1],notes:{1:"계속 공부"},bookmarks:["01-01"]}).notes[1]'),'계속 공부');
 console.log('PASS — 20 textbook chapters, 80 definitions, 20 worked examples and v1 record compatibility.');
+
+// Foundation routes, migration and backup must preserve existing records.
+assert.equal(evaluate('FOUNDATION.length'),8);
+assert(evaluate('FOUNDATION.every(c=>c.sections.length===5&&c.checks.length===2&&c.worked.steps.length===3)'));
+evaluate('state=normalize({version:1,completed:[1],notes:{1:"기존 메모"}})');
+assert.equal(evaluate('state.foundation.completed.length'),0);
+assert.equal(evaluate('state.notes[1]'),'기존 메모');
+evaluate('foundationView(1)');
+assert(evaluate('app.innerHTML.includes("회계랑 부기")&&app.innerHTML.includes("foundation-note")'));
+evaluate('foundationView(8)');
+assert(evaluate('app.innerHTML.includes("lesson/1")&&app.innerHTML.includes("선급비용")'));
+evaluate('state.foundation.notes[8]="<img src=x>";state.foundation.completed=[1,8];persist();state=normalize(JSON.parse(localStorage.getItem(KEY)));foundationView(8)');
+assert.equal(evaluate('state.foundation.completed.length'),2);
+assert(evaluate('app.innerHTML.includes("&lt;img src=x&gt;")'));
+evaluate('location.hash="#foundation/2";render()');
+assert(evaluate('app.innerHTML.includes("자산·부채·자본부터")'));
+evaluate('foundationView(null)');
+assert(evaluate('app.innerHTML.includes("8장을 읽은 뒤")'));
+console.log('PASS — foundation reading routes, original record migration, first/last chapter, escaped notes and backup round-trip.');
